@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, orientation=landscape">
+    <title>VEEP V2 - HIVE SAMPLER</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&family=Playfair+Display:ital,wght@0,700;1,700&family=DotGothic16&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0c0c0c;
+            --bee-yellow: #f1c40f;
+            --bee-gold: #d4af37;
+            --hive-bg: rgba(10, 10, 10, 0.98);
+            --glass: rgba(255, 255, 255, 0.03);
+            --pad-inactive: rgba(40, 40, 40, 0.6);
+            --transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: #050505;
+            color: #e0e0e0;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* --- Mobile Device Mimic --- */
+        .device-mimic {
+            width: 880px;
+            height: 420px;
+            background-color: var(--bg-color);
+            border-radius: 48px;
+            border: 14px solid #1a1a1a;
+            position: relative;
+            box-shadow:
+                0 0 0 4px #222,
+                0 30px 100px rgba(0, 0, 0, 0.9);
+            overflow: hidden;
+            display: flex;
+            background-image:
+                radial-gradient(circle at 10% 10%, rgba(241, 196, 15, 0.04) 0%, transparent 50%),
+                radial-gradient(circle at 90% 90%, rgba(212, 175, 55, 0.04) 0%, transparent 50%);
+        }
+
+        .device-notch {
+            position: absolute;
+            left: -2px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 20px;
+            height: 140px;
+            background: #1a1a1a;
+            border-radius: 0 15px 15px 0;
+            z-index: 1000;
+        }
+
+        .screen-content {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        /* --- Header / Status --- */
+        .header {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 40px;
+            margin-bottom: 20px;
+            z-index: 10;
+        }
+
+        .header h1 {
+            font-family: 'DotGothic16', sans-serif;
+            color: var(--bee-gold);
+            font-size: 1.5rem;
+            letter-spacing: 4px;
+        }
+
+        .status-pill {
+            background: rgba(241, 196, 15, 0.1);
+            border: 1px solid var(--bee-gold);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            color: var(--bee-yellow);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* --- 16 Pad Hive Grid --- */
+        .pad-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 110px);
+            grid-template-rows: repeat(4, 85px);
+            gap: 10px;
+            position: relative;
+            margin-left: 55px;
+            /* Offset for staggering */
+        }
+
+        .pad {
+            width: 110px;
+            height: 120px;
+            background: var(--pad-inactive);
+            clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: var(--transition);
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            position: relative;
+        }
+
+        /* Stagger logic */
+        .pad:nth-child(8n+5),
+        .pad:nth-child(8n+6),
+        .pad:nth-child(8n+7),
+        .pad:nth-child(8n+8) {
+            transform: translateX(-60px);
+        }
+
+        .pad.active-pad {
+            background: rgba(212, 175, 55, 0.15);
+            border-color: var(--bee-gold);
+        }
+
+        .pad:active {
+            transform: scale(0.9) !important;
+            background: var(--bee-yellow);
+            box-shadow: 0 0 30px var(--bee-yellow);
+        }
+
+        .pad span {
+            font-family: 'DotGothic16', sans-serif;
+            font-size: 0.8rem;
+            color: #888;
+            pointer-events: none;
+        }
+
+        .pad.triggered {
+            background: var(--bee-yellow);
+            color: #000;
+        }
+
+        .pad.triggered span {
+            color: #000;
+        }
+
+        /* Specific styles for identified pads */
+        .pad.functional {
+            border-color: var(--bee-gold);
+        }
+
+        .pad.functional span {
+            color: var(--bee-yellow);
+        }
+
+        /* Sidebar Controls */
+        .side-panel {
+            position: absolute;
+            right: 40px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .panel-btn {
+            width: 60px;
+            height: 60px;
+            background: var(--glass);
+            border: 1px solid var(--bee-gold);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: var(--bee-gold);
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .panel-btn:active {
+            background: var(--bee-gold);
+            color: #000;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="device-mimic">
+        <div class="device-notch"></div>
+        <div class="screen-content">
+            <header class="header">
+                <h1>VEEP HIVE V2</h1>
+                <div class="status-pill" id="status">Ready</div>
+            </header>
+
+            <div class="pad-grid" id="padGrid">
+                <!-- 16 Pads generated by JS -->
+            </div>
+
+            <div class="side-panel">
+                <div class="panel-btn" onclick="toggleMode()">⚙️</div>
+                <div class="panel-btn" onclick="clearAll()">🗑️</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const padGrid = document.getElementById('padGrid');
+        const statusDisplay = document.getElementById('status');
+
+        const HIVE_PATH = "HIVE/";
+        const ALL_POOL = [
+            "nes_bollywood_gqom_430.wav", "nes_complex_funky_tech.wav", "nes_dnb_remix.wav",
+            "nes_dubby_dnb.wav", "nes_goa_trance.wav", "nes_goldberg_healing_local.wav",
+            "nes_gqom_430.wav", "nes_minimalist_phasing.wav"
+        ];
+
+        const audioNodes = {};
+
+        async function initAudio() {
+            if (!window.audioCtx) {
+                window.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+
+        async function loadSamples() {
+            statusDisplay.textContent = "LOADING HIVE...";
+            await initAudio();
+
+            for (let i = 0; i < ALL_POOL.length; i++) {
+                try {
+                    const response = await fetch(HIVE_PATH + ALL_POOL[i]);
+                    const arrayBuffer = await response.arrayBuffer();
+                    const audioBuffer = await window.audioCtx.decodeAudioData(arrayBuffer);
+                    audioNodes[i] = audioBuffer;
+                } catch (e) {
+                    console.error("Failed to load sample:", ALL_POOL[i]);
+                }
+            }
+            statusDisplay.textContent = "HIVE READY";
+        }
+
+        function playSample(index) {
+            if (!audioNodes[index] || !window.audioCtx) return;
+
+            const source = window.audioCtx.createBufferSource();
+            source.buffer = audioNodes[index];
+            source.connect(window.audioCtx.destination);
+            source.start(0);
+        }
+
+        // Initialize 16 Pads
+        for (let i = 0; i < 16; i++) {
+            const pad = document.createElement('div');
+            pad.className = 'pad';
+
+            if (i < 8) {
+                pad.classList.add('functional');
+                const displayName = ALL_POOL[i].replace('nes_', '').split('_')[0].toUpperCase();
+
+                const label = document.createElement('span');
+                label.textContent = displayName;
+                pad.appendChild(label);
+
+                const trigger = async (e) => {
+                    if (e) e.preventDefault();
+                    if (!window.audioCtx) {
+                        await loadSamples();
+                    }
+                    playSample(i);
+                    triggerVisual(pad, displayName);
+                };
+
+                pad.addEventListener('mousedown', trigger);
+                pad.addEventListener('touchstart', trigger);
+            } else {
+                const label = document.createElement('span');
+                label.textContent = `P${i + 1}`;
+                pad.appendChild(label);
+                pad.style.opacity = "0.3";
+            }
+
+            padGrid.appendChild(pad);
+        }
+
+        function triggerVisual(el, name) {
+            el.classList.add('triggered');
+            statusDisplay.textContent = "BEE: " + name;
+            setTimeout(() => {
+                el.classList.remove('triggered');
+            }, 150);
+        }
+
+        function toggleMode() {
+            statusDisplay.textContent = "CONFIG MODE";
+            setTimeout(() => statusDisplay.textContent = "HIVE READY", 1000);
+        }
+
+        function clearAll() {
+            statusDisplay.textContent = "SYSTEM RESET";
+            setTimeout(() => {
+                window.audioCtx = null;
+                loadSamples();
+            }, 500);
+        }
+
+    </script>
+</body>
+
+</html>

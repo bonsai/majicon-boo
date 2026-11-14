@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, orientation=landscape">
+    <title>VEEP Horizontal - Hex Honeycomb Player</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&family=Playfair+Display:ital,wght@0,700;1,700&family=DotGothic16&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0c0c0c;
+            --bee-yellow: #f1c40f;
+            --bee-gold: #d4af37;
+            --hive-bg: rgba(10, 10, 10, 0.98);
+            --glass: rgba(255, 255, 255, 0.03);
+            --transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: #050505;
+            color: #e0e0e0;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* --- Mobile Device Mimic --- */
+        .device-mimic {
+            width: 880px;
+            height: 420px;
+            background-color: var(--bg-color);
+            border-radius: 48px;
+            border: 14px solid #1a1a1a;
+            position: relative;
+            box-shadow:
+                0 0 0 4px #222,
+                0 30px 100px rgba(0, 0, 0, 0.9);
+            overflow: hidden;
+            display: flex;
+            background-image:
+                radial-gradient(circle at 10% 10%, rgba(241, 196, 15, 0.04) 0%, transparent 50%),
+                radial-gradient(circle at 90% 90%, rgba(212, 175, 55, 0.04) 0%, transparent 50%);
+        }
+
+        /* Left side notch (Landscape) */
+        .device-notch {
+            position: absolute;
+            left: -2px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 20px;
+            height: 140px;
+            background: #1a1a1a;
+            border-radius: 0 15px 15px 0;
+            z-index: 1000;
+        }
+
+        .screen-content {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding-left: 20px;
+            /* Offset for notch area feel */
+        }
+
+        /* --- Horizontal Main Layout --- */
+        .viewport-row {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+            padding: 20px;
+            gap: 40px;
+        }
+
+        /* Left: Vinyl */
+        .vinyl-section {
+            position: relative;
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .vinyl {
+            width: 320px;
+            height: 320px;
+            background: repeating-radial-gradient(circle at center, #0c0c0c 0, #181818 2px, #0c0c0c 4px);
+            border-radius: 50%;
+            position: relative;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.9);
+            cursor: pointer;
+            transition: transform 0.1s linear;
+        }
+
+        .vinyl::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 110px;
+            height: 110px;
+            background: linear-gradient(135deg, var(--bee-gold), var(--bee-yellow));
+            border-radius: 50%;
+            z-index: 1;
+        }
+
+        .vinyl-label {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 2;
+            color: #000;
+            font-size: 9px;
+            font-weight: 800;
+            text-align: center;
+            pointer-events: none;
+            width: 90px;
+            line-height: 1.2;
+        }
+
+        .vinyl.spinning {
+            animation: rotateRec 1.81s linear infinite;
+        }
+
+        @keyframes rotateRec {
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .tonearm {
+            position: absolute;
+            top: 0;
+            right: 20%;
+            width: 8px;
+            height: 180px;
+            background: linear-gradient(to bottom, #777, #222);
+            border-radius: 4px;
+            transform-origin: top center;
+            transform: rotate(-35deg);
+            /* Parked */
+            transition: transform 1s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 10;
+        }
+
+        /* The 'playing' class now just enables transition; 
+           the actual angle is handled by JS inline styles for progress */
+        .tonearm.active {
+            transition: transform 1s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Right: Controls */
+        .controls-section {
+            flex: 0.8;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 20px;
+        }
+
+        /* Perfect 60-degree Triangular Cluster */
+        .control-cluster {
+            position: relative;
+            width: 220px;
+            height: 220px;
+            margin-top: 20px;
+        }
+
+        .hex-unit {
+            position: absolute;
+            width: 100px;
+            height: 110px;
+            background: none;
+            clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            transition: var(--transition);
+            border: 2px solid var(--bee-gold);
+            cursor: pointer;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
+            padding: 5px;
+        }
+
+        /* Equilateral spacing: D=110px, Height = D * 0.866 = ~95px */
+        .unit-logo {
+            top: 0;
+            left: 55px;
+            background: var(--bee-yellow);
+            border: none;
+            z-index: 2;
+        }
+
+        .unit-logo h1 {
+            color: #000 !important;
+        }
+
+        .unit-play {
+            top: 95px;
+            left: 0;
+        }
+
+        .unit-hive {
+            top: 95px;
+            left: 110px;
+        }
+
+        .hex-unit h1 {
+            font-family: 'DotGothic16', sans-serif;
+            color: var(--bee-gold);
+            font-size: 1.4rem;
+            margin: 0;
+            transition: 0.2s;
+            letter-spacing: 1px;
+            font-weight: normal;
+        }
+
+        .hex-unit.btn-fill {
+            background: var(--bee-gold);
+            color: #000;
+            border: none;
+        }
+
+        .hex-unit.btn-fill.active {
+            background: var(--bee-yellow);
+        }
+
+        .hex-unit:active {
+            transform: scale(0.95);
+        }
+
+        .track-status-text {
+            font-size: 0.5rem;
+            color: var(--bee-yellow);
+            font-weight: 800;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-top: 2px;
+        }
+
+        /* --- HIVE STACK OVERLAY (Compact) --- */
+        .hive-stack {
+            position: absolute;
+            /* Relative to device-mimic screen */
+            top: 0;
+            right: 0;
+            width: 260px;
+            height: 100%;
+            background: var(--hive-bg);
+            z-index: 100;
+            transform: translateX(100%);
+            transition: var(--transition);
+            padding: 20px 15px;
+            border-left: 2px solid var(--bee-gold);
+            display: flex;
+            flex-direction: column;
+            box-shadow: -15px 0 40px rgba(0, 0, 0, 0.8);
+        }
+
+        .hive-stack.active {
+            transform: translateX(0);
+        }
+
+        .hive-stack h2 {
+            color: var(--bee-gold);
+            margin-bottom: 15px;
+            letter-spacing: 2px;
+            font-family: 'Playfair Display', serif;
+            font-size: 1.2rem;
+            text-align: center;
+        }
+
+        .compact-grid {
+            flex: 1;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            /* 2 columns for space efficiency */
+            gap: 10px;
+            overflow-y: auto;
+            padding-bottom: 40px;
+        }
+
+        .compact-hex {
+            width: 100%;
+            aspect-ratio: 1/1.1;
+            background: #1a1a1a;
+            clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 8px;
+            font-size: 7px;
+            color: #aaa;
+            transition: var(--transition);
+        }
+
+        .compact-hex:active {
+            background: var(--bee-yellow);
+            color: #000;
+        }
+
+        .compact-hex.upload {
+            background: rgba(212, 175, 55, 0.1);
+            border: 1px dashed var(--bee-gold);
+        }
+
+        .back-btn {
+            background: var(--bee-gold);
+            color: #000;
+            border: none;
+            padding: 12px;
+            font-weight: 800;
+            margin-top: 20px;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="device-mimic">
+        <div class="device-notch"></div>
+        <div class="screen-content">
+            <div class="viewport-row">
+                <!-- Turntable Side -->
+                <div class="vinyl-section">
+                    <div class="vinyl" id="vinyl">
+                        <div class="vinyl-label" id="labelTxt">VEEP<br>READY</div>
+                    </div>
+                    <div class="tonearm" id="tonearm"></div>
+                </div>
+
+                <!-- Logic/Control Side -->
+                <div class="controls-section">
+                    <div class="control-cluster">
+                        <!-- Top Apex: Logo Only -->
+                        <div class="hex-unit unit-logo" id="logoBtn">
+                            <h1 id="logoTxt">VEEP</h1>
+                        </div>
+
+                        <!-- Bottom Left: Play -->
+                        <div class="hex-unit btn-fill active unit-play" id="playBtn" style="font-size: 1.8rem;">▶</div>
+
+                        <!-- Bottom Right: Hive -->
+                        <div class="hex-unit btn-fill unit-hive" id="openHive" style="font-size: 1.6rem;">🎶</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- HIVE COMPACT STACK -->
+            <div class="hive-stack" id="hiveOverlay">
+                <h2>HIVE STACK</h2>
+                <div class="compact-grid" id="hiveGrid">
+                    <div class="compact-hex upload" onclick="triggerFileInput()">📂<br>UPLOAD</div>
+                    <div class="compact-hex upload" onclick="pickRandomSet()">🎲<br>RANDOM</div>
+                    <!-- Dynamic Cells -->
+                </div>
+                <button class="back-btn" id="closeHive">CLOSE STACK</button>
+            </div>
+        </div>
+    </div>
+
+    <input type="file" id="realFileInput" accept=".wav" style="display: none;">
+    <audio id="audioPlayer"></audio>
+
+    <script>
+        const ALL_POOL = [
+            "nes_bollywood_gqom_430.wav", "nes_complex_funky_tech.wav", "nes_dnb_remix.wav",
+            "nes_dubby_dnb.wav", "nes_goa_trance.wav", "nes_goldberg_healing_local.wav",
+            "nes_gqom_430.wav", "nes_minimalist_phasing.wav", "nes_nerdcore_430.wav",
+            "nes_noise_trance_7min.wav", "nes_schranz.wav", "nes_singeli_430.wav"
+        ];
+        const HIVE_PATH = "HIVE/";
+        let activeTracks = []; // Will hold 8 track objects { name, url, isLocal }
+
+        const vinyl = document.getElementById('vinyl');
+        const tonearm = document.getElementById('tonearm');
+        const playBtn = document.getElementById('playBtn');
+        const openHive = document.getElementById('openHive');
+        const closeHive = document.getElementById('closeHive');
+        const hiveOverlay = document.getElementById('hiveOverlay');
+        const labelTxt = document.getElementById('labelTxt');
+        const logoBtn = document.getElementById('logoBtn');
+        const logoTxt = document.getElementById('logoTxt');
+        const audioPlayer = document.getElementById('audioPlayer');
+        const realFileInput = document.getElementById('realFileInput');
+        const hiveGrid = document.getElementById('hiveGrid');
+
+        let isPlaying = false;
+        let isScratching = false;
+        let startAngle = 0;
+        let currentRotation = 0;
+        let currentTrackIndex = 0;
+
+        function renderHive() {
+            // Keep Upload and Random buttons, clear the rest
+            const buttons = hiveGrid.querySelectorAll('.upload');
+            hiveGrid.innerHTML = '';
+            buttons.forEach(b => hiveGrid.appendChild(b));
+
+            activeTracks.forEach((track, idx) => {
+                const cell = document.createElement('div');
+                cell.className = 'compact-hex';
+                const displayName = track.name.replace('nes_', '').replace('.wav', '').toUpperCase();
+                cell.innerHTML = `${track.isLocal ? '💾' : '🐝'}<br>${displayName}`;
+                cell.onclick = () => loadAndPlay(idx);
+                hiveGrid.appendChild(cell);
+            });
+        }
+
+        function pickRandomSet() {
+            const shuffled = [...ALL_POOL].sort(() => 0.5 - Math.random());
+            activeTracks = shuffled.slice(0, 8).map(file => ({
+                name: file,
+                url: HIVE_PATH + file,
+                isLocal: false
+            }));
+            renderHive();
+        }
+
+        // Logo Interaction
+        logoBtn.onclick = () => {
+            logoTxt.textContent = '🐝';
+            setTimeout(() => {
+                logoTxt.textContent = 'VEEP';
+            }, 800);
+        };
+
+        async function loadAndPlay(idx) {
+            const track = activeTracks[idx];
+            if (!track) return;
+
+            hiveOverlay.classList.remove('active');
+            stopPlayback();
+
+            currentTrackIndex = idx;
+            audioPlayer.src = track.url;
+            labelTxt.innerHTML = track.name.replace('nes_', '').toUpperCase().replace(/_/g, '<br>').replace('.WAV', '');
+            await triggerSequence();
+        }
+
+        async function triggerSequence() {
+            if (!audioPlayer.src) return;
+
+            const songProgress = audioPlayer.duration ? (audioPlayer.currentTime / audioPlayer.duration) : 0;
+            // (TrackIndex + Progress) / 8 entries
+            const globalProgress = (currentTrackIndex + songProgress) / 8;
+            const targetAngle = globalProgress * 15;
+
+            // Set drop position based on current progress
+            tonearm.style.transition = 'transform 1s cubic-bezier(0.4, 0, 0.2, 1)';
+            tonearm.style.transform = `rotate(${targetAngle}deg)`;
+            vinyl.classList.add('spinning');
+
+            await new Promise(r => setTimeout(r, 1100));
+            try {
+                await audioPlayer.play();
+                isPlaying = true;
+                playBtn.textContent = '⏸';
+            } catch (e) {
+                isPlaying = true;
+            }
+        }
+
+        // --- TONEARM STATUS LOGIC ---
+        audioPlayer.addEventListener('timeupdate', () => {
+            if (!audioPlayer.duration) return;
+
+            const songProgress = audioPlayer.currentTime / audioPlayer.duration;
+            const globalProgress = (currentTrackIndex + songProgress) / 8;
+            const angle = globalProgress * 15;
+
+            // Only update if needle is on the record
+            const curRot = parseFloat(tonearm.style.transform.replace('rotate(', '')) || -35;
+            if (curRot >= -5) {
+                tonearm.style.transition = isScratching ? 'none' : 'transform 0.25s linear';
+                tonearm.style.transform = `rotate(${angle}deg)`;
+            }
+        });
+
+        function stopPlayback() {
+            audioPlayer.pause();
+            audioPlayer.currentTime = 0;
+            isPlaying = false;
+            playBtn.textContent = '▶';
+            vinyl.classList.remove('spinning');
+
+            // Return to Parked position
+            tonearm.style.transition = 'transform 1s cubic-bezier(0.4, 0, 0.2, 1)';
+            tonearm.style.transform = `rotate(-35deg)`;
+        }
+
+        playBtn.onclick = async () => {
+            if (isPlaying) {
+                audioPlayer.pause();
+                isPlaying = false;
+                playBtn.textContent = '▶';
+                vinyl.classList.remove('spinning');
+                // Stay at current angle
+            } else {
+                // Resume or Start
+                if (parseFloat(tonearm.style.transform.replace('rotate(', '')) >= -5) {
+                    // Already on record, just resume
+                    try {
+                        await audioPlayer.play();
+                        isPlaying = true;
+                        playBtn.textContent = '⏸';
+                        vinyl.classList.add('spinning');
+                    } catch (e) { console.log(e); }
+                } else {
+                    await triggerSequence();
+                }
+            }
+        };
+
+        openHive.onclick = () => hiveOverlay.classList.add('active');
+        closeHive.onclick = () => hiveOverlay.classList.remove('active');
+
+        function triggerFileInput() { realFileInput.click(); }
+        realFileInput.onchange = (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const newUrl = URL.createObjectURL(file);
+                // FIFO: remove oldest (idx 0), add new track
+                activeTracks.shift();
+                activeTracks.push({
+                    name: file.name,
+                    url: newUrl,
+                    isLocal: true
+                });
+                renderHive();
+                // Play the newly added track (last index)
+                loadAndPlay(7);
+            }
+        };
+
+        // Scratch Logic
+        function getAngle(x, y) {
+            const rect = vinyl.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+            return Math.atan2(y - centerY, x - centerX) * (180 / Math.PI);
+        }
+
+        function handleStart(e) {
+            const touch = e.touches ? e.touches[0] : e;
+            isScratching = true;
+            vinyl.classList.remove('spinning');
+            startAngle = getAngle(touch.clientX, touch.clientY) - currentRotation;
+
+            // "Just touch pause the play"
+            if (audioPlayer.src) {
+                audioPlayer.pause();
+            }
+        }
+
+        function handleMove(e) {
+            if (!isScratching) return;
+            e.preventDefault();
+            const touch = e.touches ? e.touches[0] : e;
+            const newAngle = getAngle(touch.clientX, touch.clientY);
+            const delta = (newAngle - startAngle - currentRotation);
+            currentRotation = newAngle - startAngle;
+            vinyl.style.transform = `rotate(${currentRotation}deg)`;
+
+            if (audioPlayer.src) {
+                // Audio Scratch Effect
+                const speed = Math.abs(delta) * 0.6;
+                if (speed > 0.05) {
+                    audioPlayer.playbackRate = Math.min(Math.max(speed, 0.1), 4.0);
+                    if (audioPlayer.paused) audioPlayer.play();
+                    audioPlayer.currentTime += (delta / 360) * 2.5;
+                } else {
+                    audioPlayer.pause();
+                }
+            }
+        }
+
+        function handleEnd() {
+            if (!isScratching) return;
+            isScratching = false;
+            audioPlayer.playbackRate = 1.0;
+
+            if (isPlaying) {
+                audioPlayer.play();
+                vinyl.classList.add('spinning');
+            } else {
+                audioPlayer.pause();
+            }
+        }
+
+        vinyl.addEventListener('touchstart', handleStart);
+        window.addEventListener('touchmove', handleMove, { passive: false });
+        window.addEventListener('touchend', handleEnd);
+        vinyl.addEventListener('mousedown', handleStart);
+        window.addEventListener('mousemove', handleMove);
+        window.addEventListener('mouseup', handleEnd);
+
+        // Initial Load
+        pickRandomSet();
+        // Preload first track of the set
+        (function preloadFirst() {
+            if (activeTracks.length > 0) {
+                const track = activeTracks[0];
+                currentTrackIndex = 0;
+                audioPlayer.src = track.url;
+                labelTxt.innerHTML = track.name.replace('nes_', '').toUpperCase().replace(/_/g, '<br>').replace('.WAV', '');
+            }
+        })();
+
+    </script>
+</body>
+
+</html>

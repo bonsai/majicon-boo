@@ -1,0 +1,185 @@
+l{
+  "title": "チルな日常 (Chill Daily Life)",
+  "bpm": 80,
+  "bars": 48,
+  "duration_minutes": 2.4,
+  "style": "Japanese Lofi",
+  "key": "F major (nostalgic progression)",
+  "instruments": {
+    "rhodes": {
+      "type": "Electric Piano",
+      "description": "Rhodes-style electric piano with bell-like harmonics and tremolo",
+      "harmonics": ["fundamental", "2.5x bell", "4x harmonic"],
+      "tremolo_rate": 6,
+      "tremolo_depth": 0.1,
+      "velocity": 0.35
+    },
+    "melody_lead": {
+      "type": "Soft Synth Lead",
+      "description": "Gentle melodic lead with vibrato",
+      "harmonics": ["fundamental", "2nd harmonic (0.2)"],
+      "vibrato_rate": 8,
+      "vibrato_depth": 0.003,
+      "velocity": 0.25
+    },
+    "bass": {
+      "type": "Warm Bass",
+      "description": "Warm bass following chord roots",
+      "envelope": "exponential decay",
+      "velocity": 0.4
+    },
+    "drums": {
+      "kick": {
+        "type": "Soft Kick",
+        "frequency_sweep": "70Hz to 35Hz",
+        "envelope": "exponential decay",
+        "velocity": 0.9
+      },
+      "snare": {
+        "type": "Brush Snare",
+        "components": ["noise", "180Hz tone"],
+        "envelope": "exponential decay",
+        "velocity": 0.6
+      },
+      "hihat": {
+        "type": "Gentle Hi-Hat",
+        "envelope": "fast decay",
+        "velocity": 0.18
+      },
+      "rim": {
+        "type": "Rim Shot",
+        "frequency": "800Hz",
+        "envelope": "fast decay",
+        "velocity": 0.25
+      }
+    }
+  },
+  "chord_progression": {
+    "pattern_length": 4,
+    "chords": [
+      {
+        "name": "Fmaj7",
+        "notes": [
+          {"note": "F3", "frequency": 174.61},
+          {"note": "A3", "frequency": 220.00},
+          {"note": "C4", "frequency": 261.63},
+          {"note": "E4", "frequency": 329.63}
+        ]
+      },
+      {
+        "name": "Em7",
+        "notes": [
+          {"note": "E3", "frequency": 164.81},
+          {"note": "G3", "frequency": 196.00},
+          {"note": "B3", "frequency": 246.94},
+          {"note": "D4", "frequency": 329.63}
+        ]
+      },
+      {
+        "name": "Dm7",
+        "notes": [
+          {"note": "D3", "frequency": 146.83},
+          {"note": "F3", "frequency": 174.61},
+          {"note": "A3", "frequency": 220.00},
+          {"note": "C4", "frequency": 293.66}
+        ]
+      },
+      {
+        "name": "Cmaj7",
+        "notes": [
+          {"note": "C3", "frequency": 130.81},
+          {"note": "E3", "frequency": 164.81},
+          {"note": "G3", "frequency": 196.00},
+          {"note": "C4", "frequency": 261.63}
+        ]
+      }
+    ]
+  },
+  "bass_pattern": {
+    "pattern_length": 4,
+    "notes": [
+      {"note": "F2", "frequency": 87.31},
+      {"note": "E2", "frequency": 82.41},
+      {"note": "D2", "frequency": 73.42},
+      {"note": "C2", "frequency": 65.41}
+    ]
+  },
+  "melody": {
+    "scale": "C Major Pentatonic",
+    "scale_degrees": [1, 2, 3, 5, 6],
+    "root_frequency": 261.63,
+    "pattern": [
+      {"bar": 0, "sixteenths": [
+        {"position": 0, "degree": null},
+        {"position": 1, "degree": 0},
+        {"position": 2, "degree": 2},
+        {"position": 3, "degree": 3}
+      ]},
+      {"bar": 0, "sixteenths_continued": [
+        {"position": 4, "degree": 4},
+        {"position": 5, "degree": 3},
+        {"position": 6, "degree": 2},
+        {"position": 7, "degree": null}
+      ]},
+      {"bar": 1, "sixteenths": [
+        {"position": 0, "degree": null},
+        {"position": 1, "degree": 1},
+        {"position": 2, "degree": 2},
+        {"position": 3, "degree": 4}
+      ]},
+      {"bar": 1, "sixteenths_continued": [
+        {"position": 4, "degree": 3},
+        {"position": 5, "degree": 2},
+        {"position": 6, "degree": 1},
+        {"position": 7, "degree": null}
+      ]}
+    ],
+    "hold_duration": "half beat"
+  },
+  "drum_patterns": {
+    "kick": {
+      "pattern": [1, 0, 0, 0, 0, 1, 0, 0],
+      "description": "Kick on 1 and 6 (laid back)"
+    },
+    "snare": {
+      "pattern": [0, 0, 1, 0, 0, 0, 0, 1],
+      "description": "Snare on 3 and 8 (backbeat)"
+    },
+    "hihat": {
+      "pattern": [1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0],
+      "description": "Steady 8th notes"
+    },
+    "rim": {
+      "pattern": [0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0],
+      "description": "Rim on 4 and 12 (variation)"
+    }
+  },
+  "effects": {
+    "reverb": {
+      "type": "Multi-delay",
+      "delay_times_ms": [50, 80, 110, 140],
+      "decay": 0.5,
+      "mix": 0.35
+    },
+    "lowpass_filter": {
+      "cutoff_hz": 6000,
+      "description": "Warm lofi tone"
+    },
+    "tape_saturation": {
+      "type": "Soft clipping (tanh)",
+      "description": "Warm analog character"
+    },
+    "vinyl_crackle": {
+      "threshold": 0.985,
+      "level": 0.02,
+      "description": "Occasional vinyl pops and crackles"
+    }
+  },
+  "structure": {
+    "intro": {"bars": "1-4", "description": "Full arrangement enters"},
+    "main": {"bars": "5-44", "description": "Full loop with variations"},
+    "outro": {"bars": "45-48", "description": "Reverb tail fade"}
+  },
+  "mood": ["nostalgic", "chill", "warm", "peaceful", "daily life", "memories"],
+  "reference": "Japanese lofi hip-hop aesthetic"
+}
