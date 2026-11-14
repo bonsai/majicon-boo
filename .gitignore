@@ -1,0 +1,33 @@
+# Build outputs
+test-build/
+*.elf
+*.lst
+*.map
+*.o
+*.a
+
+# Binaries / executables
+*.exe
+*.bin
+*.dll
+
+# Assets large files
+*.wav
+*.mp3
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.toml
+
+# IDE / OS
+.vscode/
+*.vcxproj
+*.sln
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+mail.log
+log
